@@ -6,6 +6,7 @@ const pad = n => String(n).padStart(2, '0');
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fmtD = s => s.split('-').reverse().join('/');
 const slotLbl = h => `${pad(h)}:00 – ${pad(h + 1)}:00`;
+const escapeHtml = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const S = { date: iso(new Date()), time: 'any', area: 'all', court: null, slots: [] };
 const ICON = {
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
@@ -34,6 +35,22 @@ addEventListener('scroll', () => {
 }, { passive: true });
 $('#burger').onclick = () => $('#nav').classList.toggle('open');
 $('#links').onclick = () => $('#nav').classList.remove('open');
+const loginDialog = $('#login-dialog');
+$('#login-open').onclick = () => loginDialog.showModal();
+$('#login-close').onclick = () => loginDialog.close();
+loginDialog.onclick = e => { if (e.target === loginDialog) loginDialog.close(); };
+$('#login-form').onsubmit = e => {
+  e.preventDefault();
+  const f = e.target, email = f.elements.email, password = f.elements.password;
+  const emailError = email.nextElementSibling, passwordError = password.nextElementSibling;
+  const validEmail = /^\S+@\S+\.\S+$/.test(email.value.trim());
+  emailError.textContent = validEmail ? '' : 'Vui lòng nhập email hợp lệ.';
+  passwordError.textContent = password.value ? '' : 'Vui lòng nhập mật khẩu.';
+  if (!validEmail || !password.value) return;
+  loginDialog.close();
+  f.reset();
+  toast('Đăng nhập chưa khả dụng trong bản demo.');
+};
 document.addEventListener('pointermove', e => {
   const c = e.target.closest?.('.card'); if (!c) return;
   const r = c.getBoundingClientRect(); c.style.setProperty('--mx', e.clientX - r.left + 'px'); c.style.setProperty('--my', e.clientY - r.top + 'px');
@@ -60,46 +77,45 @@ $('#hero').addEventListener('pointermove', e => {
 })();
 
 /* ---------- Home: search + featured courts ---------- */
-$('#s-area').innerHTML = '<option value="all">All areas</option>' + [...new Set(COURTS.map(c => c.area))].map(a => `<option>${a}</option>`).join('');
+$('#s-area').innerHTML = '<option value="all">Tất cả khu vực</option>' + [...new Set(COURTS.map(c => c.area))].map(a => `<option>${a}</option>`).join('');
 const sd = $('#s-date'); sd.value = S.date; sd.min = S.date;
 
 function card(c) {
-  const n = freeCount(c, S.date, RANGES[S.time]), st = n >= 6 ? ['ok', 'Available'] : n >= 3 ? ['mid', 'Filling fast'] : ['low', 'Almost full'];
+  const n = freeCount(c, S.date, RANGES[S.time]), st = n >= 6 ? ['ok', 'Còn nhiều giờ trống'] : n >= 3 ? ['mid', 'Sắp kín giờ'] : ['low', 'Còn ít giờ trống'];
   return `<article class="card rv"><a class="media" href="#/court/${c.id}">${art(c)}<span class="tag">${c.type}</span><span class="st ${st[0]}">${st[1]}</span></a>
   <div class="body"><h3>${c.name}</h3><p class="addr">${I('pin')}${c.addr}</p>
-  <div class="row"><b>${vnd(c.price)}<small> /hour</small></b><span class="free">${n} slots free</span></div>
-  <div class="acts"><a class="btn ghost sm" href="#/court/${c.id}">View Details</a><a class="btn sm" href="#/court/${c.id}/book">Book Now</a></div></div></article>`;
+  <div class="row"><b>${vnd(c.price)}<small> /giờ</small></b><span class="free">${n} khung giờ trống</span></div>
+  <div class="acts"><a class="btn ghost sm" href="#/court/${c.id}">Xem chi tiết</a><a class="btn sm" href="#/court/${c.id}/book">Đặt sân</a></div></div></article>`;
 }
 function renderGrid() {
   const list = COURTS.filter(c => (S.area === 'all' || c.area === S.area) && freeCount(c, S.date, RANGES[S.time]) > 0);
-  $('#grid').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">No courts available for this search. Try another date or time.</div>';
-  $('#count').textContent = `${list.length} court${list.length === 1 ? '' : 's'} available on ${fmtD(S.date)}`;
+  $('#grid').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">Không tìm thấy sân còn trống. Vui lòng thử ngày hoặc khung giờ khác.</div>';
+  $('#count').textContent = `Có ${list.length} sân phù hợp ngày ${fmtD(S.date)}`;
   reveal();
 }
 $('#search').onsubmit = e => {
   e.preventDefault();
   S.area = $('#s-area').value; S.date = sd.value || S.date; S.time = $('#s-time').value;
   const b = e.submitter; b.classList.add('load');
-  setTimeout(() => { b.classList.remove('load'); renderGrid(); $('#courts').scrollIntoView(); toast(`${$$('#grid .card').length} courts match your search`); }, 600);
+  setTimeout(() => { b.classList.remove('load'); renderGrid(); $('#courts').scrollIntoView(); toast(`Tìm thấy ${$$('#grid .card').length} sân phù hợp`); }, 600);
 };
 
 /* ---------- Court detail ---------- */
 function courtView(id, scrollToSlots) {
   const c = COURTS.find(x => x.id === +id); if (!c) { location.hash = '#/'; return; }
   if (S.court?.id !== c.id) { S.court = c; S.slots = []; }
-  const ds = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return d; });
-  if (!ds.some(d => iso(d) === S.date)) S.date = iso(ds[0]);
+  const ds = Array.from({ length: 7 }, (_, i) => { const d = new Date(`${S.date}T00:00:00`); d.setDate(d.getDate() + i); return d; });
   $('#view-court').innerHTML = `<div class="wrap detail"><div class="dl">
-    <a class="back" href="#courts">${I('arrow')}Back to courts</a>
+    <a class="back" href="#courts">${I('arrow')}Quay lại danh sách sân</a>
     <div class="gmain" id="gm">${art(c, 0)}</div>
-    <div class="thumbs">${[0, 1, 2, 3].map(v => `<button class="th${v ? '' : ' on'}" data-v="${v}" aria-label="Photo ${v + 1}">${art(c, v)}</button>`).join('')}</div>
+    <div class="thumbs">${[0, 1, 2, 3].map(v => `<button class="th${v ? '' : ' on'}" data-v="${v}" aria-label="Ảnh ${v + 1}">${art(c, v)}</button>`).join('')}</div>
     <h1>${c.name}</h1>
     <div class="meta"><span>${I('pin')}${c.addr}</span><span class="pill">${c.type}</span><span class="pill">${vnd(c.price)} / hour</span></div>
     <p>${c.desc}</p>
     <div class="feats">${c.feat.map(f => `<span>${I('check')}${f}</span>`).join('')}</div>
-    <h2 id="pick">Choose date & time</h2>
-    <div class="dates" id="dates">${ds.map(d => `<button class="dt${iso(d) === S.date ? ' on' : ''}" data-d="${iso(d)}"><small>${d.toLocaleDateString('en-GB', { weekday: 'short' })}</small><b>${pad(d.getDate())}</b><small>${d.toLocaleDateString('en-GB', { month: 'short' })}</small></button>`).join('')}</div>
-    <div class="legend"><span><i class="dot"></i>Available</span><span><i class="dot bad"></i>Booked</span><span><i class="dot sel"></i>Selected</span></div>
+    <h2 id="pick">Chọn ngày và khung giờ</h2>
+    <div class="dates" id="dates">${ds.map(d => `<button class="dt${iso(d) === S.date ? ' on' : ''}" data-d="${iso(d)}"><small>${d.toLocaleDateString('vi-VN', { weekday: 'short' })}</small><b>${pad(d.getDate())}</b><small>${d.toLocaleDateString('vi-VN', { month: 'short' })}</small></button>`).join('')}</div>
+    <div class="legend"><span><i class="dot"></i>Còn trống</span><span><i class="dot bad"></i>Đã đặt</span><span><i class="dot sel"></i>Đang chọn</span></div>
     <div class="slots" id="slots"></div></div>
     <aside class="glass sum" id="sum"></aside></div>`;
   $$('.th').forEach(b => b.onclick = () => { $$('.th').forEach(x => x.classList.remove('on')); b.classList.add('on'); const g = $('#gm'); g.style.opacity = 0; setTimeout(() => { g.innerHTML = art(c, +b.dataset.v); g.style.opacity = 1; }, 200); });
@@ -107,51 +123,57 @@ function courtView(id, scrollToSlots) {
   $('#slots').onclick = e => {
     const b = e.target.closest('.slot'); if (!b || b.disabled) return; const h = +b.dataset.h, i = S.slots.indexOf(h);
     i < 0 ? S.slots.push(h) : S.slots.splice(i, 1);
-    b.className = 'slot ' + (i < 0 ? 'sel' : 'ok'); b.querySelector('span').textContent = i < 0 ? 'Selected' : 'Available'; drawSum();
+    b.className = 'slot ' + (i < 0 ? 'sel' : 'ok'); b.querySelector('span').textContent = i < 0 ? 'Đang chọn' : 'Còn trống'; drawSum();
   };
   drawSlots(); if (scrollToSlots) setTimeout(() => $('#pick').scrollIntoView(), 80);
 }
 function drawSlots() {
   const c = S.court;
-  $('#slots').innerHTML = HOURS.map(h => { const b = booked(c, S.date, h); return `<button class="slot ${b ? 'bad' : 'ok'}" data-h="${h}" ${b ? 'disabled' : ''}><b>${slotLbl(h)}</b><span>${b ? 'Booked' : 'Available'}</span></button>`; }).join('');
+  $('#slots').innerHTML = HOURS.map(h => { const b = booked(c, S.date, h); return `<button class="slot ${b ? 'bad' : 'ok'}" data-h="${h}" ${b ? 'disabled' : ''}><b>${slotLbl(h)}</b><span>${b ? 'Đã đặt' : 'Còn trống'}</span></button>`; }).join('');
   drawSum();
 }
 function drawSum() {
   const c = S.court, hs = [...S.slots].sort((a, b) => a - b), total = hs.length * c.price;
-  $('#sum').innerHTML = `<h3>Your booking</h3><dl><dt>Court</dt><dd>${c.name}</dd><dt>Date</dt><dd>${fmtD(S.date)}</dd><dt>Slots</dt><dd class="chips">${hs.length ? hs.map(h => `<i>${pad(h)}:00</i>`).join('') : '–'}</dd><dt>Total hours</dt><dd>${hs.length} h</dd><dt>Price</dt><dd>${vnd(c.price)} / h</dd></dl>
-  <div class="total"><span>Total</span><b>${vnd(total)}</b></div><button class="btn" id="go" ${hs.length ? '' : 'disabled'}>Continue to Booking${I('arrow')}</button>`;
+  $('#sum').innerHTML = `<h3>Thông tin đặt sân</h3><dl><dt>Sân</dt><dd>${c.name}</dd><dt>Ngày</dt><dd>${fmtD(S.date)}</dd><dt>Khung giờ</dt><dd class="chips">${hs.length ? hs.map(h => `<i>${pad(h)}:00</i>`).join('') : '–'}</dd><dt>Tổng thời lượng</dt><dd>${hs.length} giờ</dd><dt>Đơn giá</dt><dd>${vnd(c.price)} / giờ</dd></dl>
+  <div class="total"><span>Tổng tiền</span><b>${vnd(total)}</b></div><button class="btn" id="go" ${hs.length ? '' : 'disabled'}>Tiếp tục đặt sân${I('arrow')}</button>`;
   $('#go').onclick = () => { location.hash = '#/booking'; };
 }
 
 /* ---------- Booking ---------- */
 function bookingView() {
   const c = S.court, hs = [...S.slots].sort((a, b) => a - b), total = hs.length * c.price;
-  $('#view-booking').innerHTML = `<div class="wrap book"><a class="back" href="#/court/${c.id}">${I('arrow')}Change time</a><h2>Confirm your booking</h2>
-  <div class="bgrid"><form id="bf" class="glass" novalidate><h3>Player details</h3>
-    <label>Full name<input name="n" placeholder="Nguyễn Văn A" autocomplete="name"><span class="err"></span></label>
-    <label>Phone number<input name="p" type="tel" placeholder="0900 000 000" autocomplete="tel"><span class="err"></span></label>
-    <label>Email (optional)<input name="e" type="email" placeholder="you@email.com" autocomplete="email"><span class="err"></span></label>
-    <button class="btn" id="cf">Confirm Booking</button></form>
-  <aside class="glass sum"><h3>${c.name}</h3><dl><dt>Date</dt><dd>${fmtD(S.date)}</dd><dt>Slots</dt><dd class="chips">${hs.map(h => `<i>${slotLbl(h)}</i>`).join('')}</dd><dt>Total hours</dt><dd>${hs.length} h</dd><dt>Unit price</dt><dd>${vnd(c.price)} / h</dd></dl>
+  $('#view-booking').innerHTML = `<div class="wrap book"><a class="back" href="#/court/${c.id}">${I('arrow')}Thay đổi khung giờ</a><h2>Xác nhận đặt sân</h2>
+  <div class="bgrid"><form id="bf" class="glass" novalidate><h3>Thông tin người đặt</h3>
+    <label>Họ và tên<input name="n" placeholder="Nguyễn Văn A" autocomplete="name"><span class="err"></span></label>
+    <label>Số điện thoại<input name="p" type="tel" placeholder="0900 000 000" autocomplete="tel"><span class="err"></span></label>
+    <label>Email (không bắt buộc)<input name="e" type="email" placeholder="ban@email.com" autocomplete="email"><span class="err"></span></label>
+    <fieldset class="payment-methods"><legend>Phương thức thanh toán</legend>
+      <label><input type="radio" name="payment" value="onsite" checked><span><b>Thanh toán tại sân</b><small>Thanh toán trực tiếp khi đến sân</small></span></label>
+      <label><input type="radio" name="payment" value="transfer"><span><b>Chuyển khoản</b><small>Phương thức minh họa · chưa kết nối ngân hàng</small></span></label>
+    </fieldset>
+    <p class="demo-note">Đây là bản demo giao diện. Chưa phát sinh giao dịch thanh toán thực tế.</p>
+    <button class="btn" id="cf">Gửi yêu cầu đặt sân</button></form>
+  <aside class="glass sum"><h3>${c.name}</h3><dl><dt>Ngày</dt><dd>${fmtD(S.date)}</dd><dt>Khung giờ</dt><dd class="chips">${hs.map(h => `<i>${slotLbl(h)}</i>`).join('')}</dd><dt>Tổng thời lượng</dt><dd>${hs.length} giờ</dd><dt>Đơn giá</dt><dd>${vnd(c.price)} / giờ</dd></dl>
   <div class="total"><span>Total</span><b>${vnd(total)}</b></div></aside></div></div>`;
   $('#bf').onsubmit = e => {
     e.preventDefault(); const f = e.target; let ok = true;
     const chk = (el, bad, msg) => { el.classList.toggle('bad', bad); el.nextElementSibling.textContent = bad ? msg : ''; if (bad) ok = false; };
-    chk(f.n, f.n.value.trim().length < 2, 'Please enter your name');
-    chk(f.p, !/^(\+84|0)\d{9,10}$/.test(f.p.value.replace(/\s/g, '')), 'Enter a valid phone number');
-    chk(f.e, f.e.value && !/^\S+@\S+\.\S+$/.test(f.e.value), 'Invalid email');
+    chk(f.n, f.n.value.trim().length < 2, 'Vui lòng nhập họ tên hợp lệ.');
+    chk(f.p, !/^(\+84|0)\d{9,10}$/.test(f.p.value.replace(/\s/g, '')), 'Vui lòng nhập số điện thoại hợp lệ.');
+    chk(f.e, f.e.value && !/^\S+@\S+\.\S+$/.test(f.e.value), 'Email chưa đúng định dạng.');
     if (!ok) return;
-    $('#cf').classList.add('load'); $('#cf').textContent = 'Processing…';
-    setTimeout(() => success(f.n.value.trim(), hs, total), 1400);
+    $('#cf').classList.add('load'); $('#cf').textContent = 'Đang xử lý…';
+    const payment = f.elements.payment.value === 'transfer' ? 'Chuyển khoản (demo)' : 'Thanh toán tại sân';
+    setTimeout(() => success(f.n.value.trim(), hs, total, payment), 900);
   };
 }
-function success(name, hs, total) {
+function success(name, hs, total, payment) {
   const c = S.court, code = 'BS-' + Math.random().toString(36).slice(2, 8).toUpperCase();
   hs.forEach(h => TAKEN.add(`${c.id}|${S.date}|${h}`));
   $('#view-booking').innerHTML = `<div class="wrap"><div class="glass done"><div class="chk"><svg width="44" height="44" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div>
-  <h2>Booking confirmed</h2><p style="color:var(--mu)">See you on court, ${name}.</p><div class="code">${code}</div>
-  <dl><dt>Court</dt><dd>${c.name}</dd><dt>Date</dt><dd>${fmtD(S.date)}</dd><dt>Time</dt><dd>${hs.map(h => pad(h) + ':00').join(', ')}</dd><dt>Total</dt><dd>${vnd(total)}</dd></dl>
-  <div class="acts"><a class="btn" href="#/">Back to Home</a><a class="btn ghost" href="#courts">Book another</a></div></div></div>`;
+  <h2>Gửi yêu cầu thành công</h2><p style="color:var(--mu)">Cảm ơn ${escapeHtml(name)}. Đây là xác nhận minh họa của bản demo.</p><div class="code">${code}</div>
+  <dl><dt>Sân</dt><dd>${c.name}</dd><dt>Ngày</dt><dd>${fmtD(S.date)}</dd><dt>Khung giờ</dt><dd>${hs.map(h => pad(h) + ':00').join(', ')}</dd><dt>Thanh toán</dt><dd>${payment}</dd><dt>Tổng tiền</dt><dd>${vnd(total)}</dd></dl>
+  <div class="acts"><a class="btn" href="#/">Về trang chủ</a><a class="btn ghost" href="#courts">Đặt sân khác</a></div></div></div>`;
   S.slots = []; renderGrid();
 }
 

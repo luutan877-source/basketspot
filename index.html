@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketSpot – Find Your Court. Own Your Game.</title>
-<meta name="description" content="Discover basketball courts, check real-time availability and book your next game.">
+<title>BasketSpot – Tìm sân, đặt sân bóng rổ</title>
+<meta name="description" content="Tìm sân bóng rổ, xem khung giờ còn trống và đặt lịch chơi dễ dàng cùng BasketSpot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -17,10 +17,11 @@
 <header class="nav" id="nav">
   <a href="#/" class="logo"><span class="logo-ball"></span>Basket<em>Spot</em></a>
   <nav class="links" id="links">
-    <a href="#/">Home</a><a href="#courts">Courts</a><a href="#why">Why BasketSpot</a><a href="#how">How It Works</a>
+    <a href="#/">Trang chủ</a><a href="#courts">Danh sách sân</a><a href="#why">Vì sao chọn BasketSpot</a><a href="#how">Cách đặt sân</a>
+    <button class="nav-login" id="login-open" type="button">Đăng nhập</button>
   </nav>
-  <a href="#courts" class="btn sm nav-cta">Book Now</a>
-  <button class="burger" id="burger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a href="#courts" class="btn sm nav-cta">Đặt sân</a>
+  <button class="burger" id="burger" aria-label="Mở hoặc đóng menu"><span></span><span></span><span></span></button>
 </header>
 
 <main>
@@ -31,59 +32,59 @@
     <svg class="hero-court" viewBox="0 0 400 240" fill="none" stroke="#ff9b54" stroke-width="1.5"><rect x="12" y="12" width="376" height="216"/><path d="M200 12v216"/><circle cx="200" cy="120" r="30"/><rect x="12" y="75" width="95" height="90"/><rect x="293" y="75" width="95" height="90"/><path d="M12 30a150 150 0 010 180M388 30a150 150 0 000 180"/></svg>
     <div class="wrap hero-in">
       <div class="hero-txt">
-        <h1><span class="l1">Find your court.</span><span class="l2">Own your game.</span></h1>
-        <p>Discover basketball courts, check real-time availability and book your next game effortlessly.</p>
-        <div class="acts"><a class="btn" href="#courts">Explore Courts</a><a class="btn ghost" href="#how">How It Works</a></div>
+        <h1><span class="l1">Tìm sân bóng.</span><span class="l2">Làm chủ trận đấu.</span></h1>
+        <p>Tìm sân bóng rổ phù hợp, xem khung giờ còn trống và lên lịch cho trận đấu tiếp theo.</p>
+        <div class="acts"><a class="btn" href="#courts">Khám phá sân</a><a class="btn ghost" href="#how">Cách đặt sân</a></div>
       </div>
       <div class="hero-vis" id="vis">
         <div class="glow"></div><div class="ring r1"></div><div class="ring r2"></div>
         <div class="ball"><svg viewBox="0 0 200 200"><defs><radialGradient id="bg" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#ffa062"/><stop offset=".55" stop-color="#ff6b2c"/><stop offset="1" stop-color="#b8400f"/></radialGradient><clipPath id="bc"><circle cx="100" cy="100" r="96"/></clipPath></defs><circle cx="100" cy="100" r="96" fill="url(#bg)"/><g clip-path="url(#bc)" stroke="#2a1006" stroke-width="4" fill="none"><path d="M100 0v200M0 100h200"/><path d="M28 18Q110 100 28 182M172 18Q90 100 172 182"/></g></svg></div>
         <div class="shadow"></div>
-        <div class="chip c1"><i class="dot ok"></i>17:00 – 18:00 Available</div>
-        <div class="chip c2"><i class="dot bad"></i>07:00 – 08:00 Booked</div>
-        <div class="chip c3"><i class="dot sel"></i>2 hrs selected</div>
+        <div class="chip c1"><i class="dot ok"></i>17:00 – 18:00 Còn trống</div>
+        <div class="chip c2"><i class="dot bad"></i>07:00 – 08:00 Đã đặt</div>
+        <div class="chip c3"><i class="dot sel"></i>Đã chọn 2 giờ</div>
       </div>
     </div>
   </div>
 
   <div class="wrap">
     <form class="search glass" id="search" autocomplete="off">
-      <label>Location<select id="s-area"></select></label>
-      <label>Date<input type="date" id="s-date"></label>
-      <label>Time slot<select id="s-time"><option value="any">Any time</option><option value="am">Morning · 06:00–12:00</option><option value="pm">Afternoon · 12:00–18:00</option><option value="ev">Evening · 18:00–22:00</option></select></label>
-      <button class="btn" type="submit"><i data-i="search"></i>Search Courts</button>
+      <label>Khu vực<select id="s-area"></select></label>
+      <label>Ngày chơi<input type="date" id="s-date"></label>
+      <label>Khung giờ<select id="s-time"><option value="any">Tất cả khung giờ</option><option value="am">Buổi sáng · 06:00–12:00</option><option value="pm">Buổi chiều · 12:00–18:00</option><option value="ev">Buổi tối · 18:00–22:00</option></select></label>
+      <button class="btn" type="submit"><i data-i="search"></i>Tìm sân</button>
     </form>
   </div>
 
   <section class="sec wrap" id="courts">
-    <div class="head rv"><h2>Featured courts</h2><p id="count"></p></div>
+    <div class="head rv"><h2>Sân nổi bật</h2><p id="count"></p></div>
     <div class="grid" id="grid"></div>
   </section>
 
   <section class="sec wrap" id="why">
-    <div class="head rv"><h2>Why choose BasketSpot</h2><p>Built by players who got tired of calling five courts to find one free hour.</p></div>
+    <div class="head rv"><h2>Vì sao chọn BasketSpot</h2><p>Giúp bạn tìm sân trống và lên lịch chơi thuận tiện hơn.</p></div>
     <div class="why">
-      <article class="glass why-a rv"><h3>Real-time availability</h3><p>Every hour on every court is live. Green is open, red is gone, and nobody gets double-booked.</p><div class="mini"><span class="s ok">17:00</span><span class="s bad">18:00</span><span class="s sel">19:00</span><span class="s ok">20:00</span></div></article>
-      <article class="glass why-i rv"><i data-i="pin"></i><div><h3>Easy court discovery</h3><p>Filter by area, date and time and see only courts that actually have space.</p></div></article>
-      <article class="glass why-i rv"><i data-i="zap"></i><div><h3>Simple online booking</h3><p>Pick your hours, check the total, confirm. No calls, no deposits by chat.</p></div></article>
-      <article class="glass why-i rv"><i data-i="cal"></i><div><h3>Convenient scheduling</h3><p>Book a week ahead for the squad, or grab the last slot tonight.</p></div></article>
+      <article class="glass why-a rv"><h3>Xem khung giờ trống</h3><p>Chọn ngày chơi và theo dõi trạng thái từng khung giờ để lên lịch phù hợp.</p><div class="mini"><span class="s ok">17:00</span><span class="s bad">18:00</span><span class="s sel">19:00</span><span class="s ok">20:00</span></div></article>
+      <article class="glass why-i rv"><i data-i="pin"></i><div><h3>Tìm sân dễ dàng</h3><p>Lọc sân theo khu vực, ngày chơi và khung giờ mong muốn.</p></div></article>
+      <article class="glass why-i rv"><i data-i="zap"></i><div><h3>Đặt sân thuận tiện</h3><p>Chọn giờ, xem chi phí dự kiến và gửi yêu cầu đặt sân.</p></div></article>
+      <article class="glass why-i rv"><i data-i="cal"></i><div><h3>Chủ động lịch chơi</h3><p>Lên lịch cùng đội bóng và chọn khung giờ phù hợp.</p></div></article>
     </div>
   </section>
 
   <section class="sec wrap" id="how">
-    <div class="head rv"><h2>How it works</h2><p>From tip-off to final whistle in four steps.</p></div>
+    <div class="head rv"><h2>Cách đặt sân</h2><p>Chọn sân, chọn giờ và gửi yêu cầu đặt sân chỉ với vài bước.</p></div>
     <ol class="steps">
-      <li class="rv"><b>1</b><h3>Find your court</h3><p>Search by area, date and time.</p></li>
-      <li class="rv"><b>2</b><h3>Select your time</h3><p>Tap one or more open hours.</p></li>
-      <li class="rv"><b>3</b><h3>Confirm your booking</h3><p>Review the total and confirm.</p></li>
-      <li class="rv"><b>4</b><h3>Get ready to play</h3><p>Show up, lace up, run it.</p></li>
+      <li class="rv"><b>1</b><h3>Tìm sân phù hợp</h3><p>Tìm theo khu vực, ngày và khung giờ.</p></li>
+      <li class="rv"><b>2</b><h3>Chọn giờ chơi</h3><p>Chọn một hoặc nhiều khung giờ còn trống.</p></li>
+      <li class="rv"><b>3</b><h3>Xác nhận đặt sân</h3><p>Kiểm tra thông tin và gửi yêu cầu đặt sân.</p></li>
+      <li class="rv"><b>4</b><h3>Sẵn sàng ra sân</h3><p>Chuẩn bị cho trận đấu của bạn.</p></li>
     </ol>
   </section>
 
   <section class="wrap sec"><div class="ctab rv">
     <svg viewBox="0 0 400 240" fill="none" stroke="#fff" stroke-width="2"><circle cx="330" cy="120" r="90"/><rect x="250" y="60" width="160" height="120"/><circle cx="330" cy="120" r="30"/></svg>
-    <h2>The court is open.<br>Your hour is waiting.</h2>
-    <a class="btn dark" href="#courts">Find a court now<i data-i="arrow"></i></a>
+    <h2>Sân đang chờ bạn.<br>Chọn giờ chơi ngay.</h2>
+    <a class="btn dark" href="#courts">Tìm sân ngay<i data-i="arrow"></i></a>
   </div></section>
 </section>
 
@@ -91,14 +92,27 @@
 <section id="view-booking" class="view"></section>
 </main>
 
+<dialog class="auth-dialog" id="login-dialog" aria-labelledby="login-title">
+  <form class="auth-card" id="login-form" novalidate>
+    <button class="dialog-close" id="login-close" type="button" aria-label="Đóng">×</button>
+    <span class="eyebrow">BASKETSPOT</span>
+    <h2 id="login-title">Đăng nhập</h2>
+    <p>Đăng nhập để quản lý lịch đặt sân của bạn.</p>
+    <label>Email<input name="email" type="email" autocomplete="email" placeholder="ban@email.com" required><span class="err"></span></label>
+    <label>Mật khẩu<input name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required><span class="err"></span></label>
+    <button class="btn" type="submit">Đăng nhập</button>
+    <small>Giao diện minh họa · Chức năng tài khoản sẽ được kết nối với hệ thống.</small>
+  </form>
+</dialog>
+
 <footer class="foot">
   <div class="wrap fg">
-    <div><a href="#/" class="logo"><span class="logo-ball"></span>Basket<em>Spot</em></a><p>Find, check and book basketball courts in minutes.</p></div>
-    <div><h4>Explore</h4><a href="#courts">Courts</a><a href="#why">Why BasketSpot</a><a href="#how">How It Works</a></div>
+    <div><a href="#/" class="logo"><span class="logo-ball"></span>Basket<em>Spot</em></a><p>Tìm sân, xem khung giờ trống và lên lịch chơi bóng rổ.</p></div>
+    <div><h4>Khám phá</h4><a href="#courts">Danh sách sân</a><a href="#why">Vì sao chọn BasketSpot</a><a href="#how">Cách đặt sân</a></div>
     <div><h4>Contact</h4><a href="mailto:hello@basketspot.vn">hello@basketspot.vn</a><a href="tel:+84900000000">0900 000 000</a><span>TP. Hồ Chí Minh, Việt Nam</span></div>
     <div><h4>Project</h4><span>Nhóm 07 – Phân tích & Thiết kế HTTT</span><span>Frontend demo · mock data</span></div>
   </div>
-  <div class="wrap copy">© 2026 BasketSpot. All rights reserved.</div>
+  <div class="wrap copy">© 2026 BasketSpot. Bản demo giao diện · Dữ liệu minh họa.</div>
 </footer>
 <div id="toast" role="status"></div>
 <script src="js/data.js"></script>
